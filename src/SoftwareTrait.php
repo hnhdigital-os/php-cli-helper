@@ -16,17 +16,12 @@ trait SoftwareTrait
     public function packageInstalled($name)
     {        
         $process = new Process([
-            'sudo',
-            'dpkg',
-            '-s',
-            $name,
-            '|',
-            'grep',
-            'Status',
-            '>/dev/null 2>&1; echo $?',
+            'sudo dpkg -s "$NAME" | grep Status >/dev/null 2>&1; echo $?',
         ]);
 
-        $process->run();
+        $process->run(null, [
+            'NAME' => $name
+        ]);
 
         return !(boolean) $process->getOutput();
     }
@@ -39,13 +34,12 @@ trait SoftwareTrait
     public function binaryExists($name)
     {
         $process = new Process([
-            'command',
-            '-v',
-            $name,
-            '>/dev/null 2>&1; echo $?',
+            'command -v "$NAME" >/dev/null 2>&1; echo $?',
         ]);
 
-        $process->run();
+        $process->run(null, [
+            'NAME' => $name
+        ]);
 
         return !(boolean) $process->getOutput();
     }
@@ -58,16 +52,12 @@ trait SoftwareTrait
     public function serviceExists($name)
     {
         $process = new Process([
-            'service',
-            '--status-all',
-            '|',
-            'grep',
-            '-Fq',
-            $name,
-            '>/dev/null 2>&1; echo $?',
+            'service --status-all | grep -Fq "$NAME" >/dev/null 2>&1; echo $?',
         ]);
 
-        $process->run();
+        $process->run(null, [
+            'NAME' => $name
+        ]);
 
         return !(boolean) $process->getOutput();
     }
@@ -81,27 +71,30 @@ trait SoftwareTrait
      */
     public function aptInstall(...$packages)
     {
+        if (is_array(array_get($packages, 0))) {
+            $packages = array_get($packages, 0);
+        }
+
         list($quiet_arg_1, $quiet_arg_2) = $this->getVerboseArguments();
 
         foreach ($packages as $package) {
             if ($this->packageInstalled($package)) {
+                $this->line(sprintf('Installed %s ✔️', $package));
                 continue;
             }
 
-            $this->info(sprintf('Installing %s...', $package));
+            $this->line(sprintf('Installing %s ✔️', $package));
 
             $process = new Process([
-                'sudo',
-                'apt-get',
-                $quiet_arg_1,
-                'install',
-                $package,
-                '-y',
-                $quiet_arg_2,
+                'sudo apt-get $Q_ARG_1 install "$PACKAGE" -y $Q_ARG_2',
             ]);
 
             $process->setTimeout(null)
-                ->run();
+                ->run(null, [
+                    'PACKAGE' => $package,
+                    'Q_ARG_1' => $quiet_arg_1,
+                    'Q_ARG_2' => $quiet_arg_2,
+                ]);
         }
     }
 
@@ -118,27 +111,26 @@ trait SoftwareTrait
 
         // Add the repository.
         $process = new Process([
-            'sudo',
-            'apt-add-repository',
-            $name,
-            '-y',
-            $quiet_arg_2,
+            'sudo apt-add-repository "$NAME" -y $Q_ARG_2',
         ]);
 
         $process->setTimeout(null)
-            ->run();
+            ->run(null, [
+                'NAME' => $name,
+                'Q_ARG_2' => $quiet_arg_2,
+            ]);
 
         // Update repo.
         $process = new Process([
-            'sudo',
-            'apt-get',
-            $quiet_arg_1,
-            'update',
-            $quiet_arg_2,
+            'sudo apt-get $Q_ARG_1 update $Q_ARG_2'
         ]);
 
         $process->setTimeout(null)
-            ->run();
+            ->run(null, [
+                'NAME' => $name,
+                'Q_ARG_1' => $quiet_arg_1,
+                'Q_ARG_2' => $quiet_arg_2,
+            ]);
     }
 
     /**
@@ -158,17 +150,15 @@ trait SoftwareTrait
             }
 
             $process = new Process([
-                'sudo',
-                'apt-get',
-                $quiet_arg_1,
-                'remove,',
-                $package,
-                '-y',
-                $quiet_arg_2,
+                'sudo apt-get  $Q_ARG_1 remove "$PACKAGE" -y  $Q_ARG_2'
             ]);
 
             $process->setTimeout(null)
-                ->run();
+                ->run(null, [
+                    'PACKAGE' => $package,
+                    'Q_ARG_1' => $quiet_arg_1,
+                    'Q_ARG_2' => $quiet_arg_2,
+                ]);
         }
     }
 
@@ -187,15 +177,13 @@ trait SoftwareTrait
 
         foreach ($packages as $package) {
             $process = new Process([
-                'sudo',
-                'pip',
-                'install',
-                '--upgrade',
-                $package
+                'sudo pip install --upgrade "$PACKAGE"'
             ]);
 
             $process->setTimeout(null)
-                ->run();
+                ->run(null, [
+                    'PACKAGE' => $package
+                ]);
         }
     }
 
