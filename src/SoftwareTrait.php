@@ -81,7 +81,7 @@ trait SoftwareTrait
      */
     public function aptInstall(...$packages)
     {
-        list($quiet_arg_1, $quiet_arg_2) - $this->getVerboseArguments();
+        list($quiet_arg_1, $quiet_arg_2) = $this->getVerboseArguments();
 
         foreach ($packages as $package) {
             if ($this->packageInstalled($package)) {
@@ -114,7 +114,7 @@ trait SoftwareTrait
      */
     public function aptAddRepo($name)
     {
-        list($quiet_arg_1, $quiet_arg_2) - $this->getVerboseArguments();
+        list($quiet_arg_1, $quiet_arg_2) = $this->getVerboseArguments();
 
         // Add the repository.
         $process = new Process([
@@ -150,7 +150,7 @@ trait SoftwareTrait
      */
     public function aptRemove(...$packages)
     {
-        list($quiet_arg_1, $quiet_arg_2) - $this->getVerboseArguments();
+        list($quiet_arg_1, $quiet_arg_2) = $this->getVerboseArguments();
 
         foreach ($packages as $package) {
             if (!$this->packageInstalled($package)) {
