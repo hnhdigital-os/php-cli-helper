@@ -34,6 +34,10 @@ trait FileSystemTrait
      */
     private function loadYamlFile($path)
     {
+        if (!file_exists($path)) {
+            return [];
+        }
+
         try {
             $result = Yaml::parse(file_get_contents($path));
 
