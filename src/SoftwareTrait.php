@@ -96,7 +96,7 @@ trait SoftwareTrait
                 $quiet_arg_1,
                 'install',
                 $package,
-                '-y'
+                '-y',
                 $quiet_arg_2,
             ]);
 
@@ -161,7 +161,7 @@ trait SoftwareTrait
                 'sudo',
                 'apt-get',
                 $quiet_arg_1,
-                'remove,'
+                'remove,',
                 $package,
                 '-y',
                 $quiet_arg_2,
@@ -189,7 +189,7 @@ trait SoftwareTrait
             $process = new Process([
                 'sudo',
                 'pip',
-                'install'
+                'install',
                 '--upgrade',
                 $package
             ]);
