@@ -10,18 +10,19 @@ trait UserTrait
     /**
      * Check if a user exists.
      *
+     * @param string $name
+     *
      * @return bool
      */
-    public function userExists($name)
+    protected function userExists($name)
     {
         $process = new Process([
-            'id',
-            $name,
-            '-u',
-            '>/dev/null 2>&1; echo $?'
+            'id "$NAME" -u >/dev/null 2>&1; echo $?'
         ]);
 
-        $process->run();
+        $process->run(null, [
+            'NAME' => $name
+        ]);
 
         return !(boolean) $process->getOutput();
     }
@@ -29,22 +30,19 @@ trait UserTrait
     /**
      * Change user password.
      *
+     * @param string $username
+     * @param string $password
+     *
      * @return void
      */
-    public function changeUserPassword($username, $password = null)
+    protected function changeUserPassword($username, $password = null)
     {
         if (is_null($password)) {
             $password = '';
         }
 
         $process = new Process([
-            'set +o history',
-            '&&',
-            'echo', sprintf('%s|%s', $username, $password), 
-            '|',
-            'chpasswd',
-            '&&',
-            'set -o history',
+            sprintf('set +o history && echo %s|%s | chpasswd && set -o history', $username, $password)
         ]);
 
         $process->run();

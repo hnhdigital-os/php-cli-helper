@@ -16,7 +16,7 @@ trait FileSystemTrait
      *
      * @return void
      */
-    public function removeDirectory($path)
+    protected function removeDirectory($path)
     {
         $files = glob($path . '/*');
 
@@ -30,9 +30,11 @@ trait FileSystemTrait
     /**
      * Load yaml file.
      *
+     * @param string $path
+     *
      * @return array
      */
-    private function loadYamlFile($path)
+    protected function loadYamlFile($path)
     {
         if (!file_exists($path)) {
             return [];
@@ -52,9 +54,12 @@ trait FileSystemTrait
     /**
      * Save user config.
      *
+     * @param string $path
+     * @param string $data
+     *
      * @return array
      */
-    private function saveYamlFile($path, $data)
+    protected function saveYamlFile($path, $data)
     {
         file_put_contents($path, Yaml::dump($data));
     }

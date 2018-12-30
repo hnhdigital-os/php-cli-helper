@@ -11,9 +11,11 @@ trait SoftwareTrait
     /**
      * Check if a package is installed.
      *
+     * @param string $name
+     *
      * @return bool
      */
-    public function packageInstall($name)
+    protected function packageInstalled($name)
     {        
         $process = new Process([
             'sudo dpkg -s "$NAME" | grep Status >/dev/null 2>&1; echo $?',
@@ -29,9 +31,11 @@ trait SoftwareTrait
     /**
      * Check if a binary exists.
      *
+     * @param string $name
+     *
      * @return bool
      */
-    public function binaryExists($name)
+    protected function binaryExists($name)
     {
         $process = new Process([
             'command -v "$NAME" >/dev/null 2>&1; echo $?',
@@ -47,9 +51,11 @@ trait SoftwareTrait
     /**
      * Check if a service exists.
      *
+     * @param string $name
+     *
      * @return bool
      */
-    public function serviceExists($name)
+    protected function serviceExists($name)
     {
         $process = new Process([
             'service --status-all | grep -Fq "$NAME" >/dev/null 2>&1; echo $?',
@@ -63,13 +69,27 @@ trait SoftwareTrait
     }
 
     /**
-     * Install packages.
+     * Install package.
      *
-     * @param arguments $packages
+     * @param arguments ...$packages
+     *
+     * @return void
+     *
+     * @todo Add distro check.
+     */
+    protected function packageInstall(...$packages)
+    {
+        $this->aptInstall(...$packages);
+    }
+
+    /**
+     * Install packages using apt-get package manager.
+     *
+     * @param arguments ...$packages
      *
      * @return void
      */
-    public function aptInstall(...$packages)
+    protected function aptInstall(...$packages)
     {
         if (is_array(array_get($packages, 0))) {
             $packages = array_get($packages, 0);
@@ -105,7 +125,7 @@ trait SoftwareTrait
      *
      * @return void
      */
-    public function aptAddRepo($name)
+    protected function aptAddRepo($name)
     {
         list($quiet_arg_1, $quiet_arg_2) = $this->getVerboseArguments();
 
@@ -140,7 +160,7 @@ trait SoftwareTrait
      *
      * @return void
      */
-    public function aptRemove(...$packages)
+    protected function aptRemove(...$packages)
     {
         list($quiet_arg_1, $quiet_arg_2) = $this->getVerboseArguments();
 
@@ -169,7 +189,7 @@ trait SoftwareTrait
      *
      * @return void
      */
-    public function pipInstall(...$packages)
+    protected function pipInstall(...$packages)
     {
         if (!$this->packageInstalled('python-pip')) {
             return false;
@@ -192,7 +212,7 @@ trait SoftwareTrait
      *
      * @return array
      */
-    public function getVerboseArguments()
+    protected function getVerboseArguments()
     {
         $quiet_arg_1 = $this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE ? '-qq' : '';
         $quiet_arg_2 = $this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE ? '2>&1 /dev/null' : '';

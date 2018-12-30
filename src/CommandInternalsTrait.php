@@ -9,9 +9,12 @@ trait CommandInternalsTrait
     /**
      * Get config path.
      *
+     * @param string $file_name
+     * @param bool   $is_file
+     *
      * @return string
      */
-    private function getConfigPath($file_name = '', $is_file = false)
+    protected function getConfigPath($file_name = '', $is_file = false)
     {
         $path = $this->getUserHome();
         $path = empty($path) ? $_SERVER['TMPDIR'] : $path;
@@ -27,9 +30,12 @@ trait CommandInternalsTrait
     /**
      * Get temporary path.
      *
+     * @param string $file_name
+     * @param bool   $is_file
+     *
      * @return string
      */
-    private function getTempPath($file_name = '', $is_file = false)
+    protected function getTempPath($file_name = '', $is_file = false)
     {
         $path = env('XDG_RUNTIME_DIR') ? env('XDG_RUNTIME_DIR') : $this->getUserHome('tmp');
         $path = empty($path) ? $_SERVER['TMPDIR'] : $path;
@@ -45,9 +51,12 @@ trait CommandInternalsTrait
     /**
      * Check path.
      *
+     * @param string $path
+     * @param bool   $check_file
+     *
      * @return string
      */
-    private function checkPath($path, $check_file = true)
+    protected function checkPath($path, $check_file = true)
     {
         // Create working directory.
         if (!file_exists($dirname_path = $check_file ? dirname($path) : $path)) {
@@ -63,9 +72,13 @@ trait CommandInternalsTrait
     }
 
     /**
-     * Return the user's home directory.
+     * Get the current user home path.
+     *
+     * @param string $path
+     *
+     * @return string
      */
-    private function getUserHome($path = '')
+    protected function getUserHome($path = '')
     {
         // Linux home directory
         $home_path = getenv('HOME');
