@@ -13,7 +13,7 @@ trait SoftwareTrait
      *
      * @return bool
      */
-    public function packageInstalled($name)
+    public function packageInstall($name)
     {        
         $process = new Process([
             'sudo dpkg -s "$NAME" | grep Status >/dev/null 2>&1; echo $?',
