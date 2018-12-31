@@ -2,9 +2,6 @@
 
 namespace HnhDigital\CliHelper;
 
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Yaml\Yaml;
 
 trait FileSystemTrait
@@ -18,7 +15,7 @@ trait FileSystemTrait
      */
     protected function removeDirectory($path)
     {
-        $files = glob($path . '/*');
+        $files = glob($path.'/*');
 
         foreach ($files as $file) {
             is_dir($file) ? removeDirectory($file) : unlink($file);

@@ -3,7 +3,6 @@
 namespace HnhDigital\CliHelper;
 
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 trait UserTrait
 {
@@ -17,14 +16,14 @@ trait UserTrait
     protected function userExists($name)
     {
         $process = new Process([
-            'id "$NAME" -u >/dev/null 2>&1; echo $?'
+            'id "$NAME" -u >/dev/null 2>&1; echo $?',
         ]);
 
         $process->run(null, [
-            'NAME' => $name
+            'NAME' => $name,
         ]);
 
-        return !(boolean) $process->getOutput();
+        return !(bool) $process->getOutput();
     }
 
     /**
@@ -42,7 +41,7 @@ trait UserTrait
         }
 
         $process = new Process([
-            sprintf('set +o history && echo %s|%s | chpasswd && set -o history', $username, $password)
+            sprintf('set +o history && echo %s|%s | chpasswd && set -o history', $username, $password),
         ]);
 
         $process->run();

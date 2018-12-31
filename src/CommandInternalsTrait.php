@@ -2,8 +2,6 @@
 
 namespace HnhDigital\CliHelper;
 
-use Symfony\Component\Yaml\Yaml;
-
 trait CommandInternalsTrait
 {
     /**
