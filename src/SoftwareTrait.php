@@ -4,7 +4,6 @@ namespace HnhDigital\CliHelper;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 trait SoftwareTrait
 {
@@ -16,16 +15,16 @@ trait SoftwareTrait
      * @return bool
      */
     protected function packageInstalled($name)
-    {        
+    {
         $process = new Process([
             'sudo dpkg -s "$NAME" | grep Status >/dev/null 2>&1; echo $?',
         ]);
 
         $process->run(null, [
-            'NAME' => $name
+            'NAME' => $name,
         ]);
 
-        return !(boolean) $process->getOutput();
+        return !(bool) $process->getOutput();
     }
 
     /**
@@ -42,10 +41,10 @@ trait SoftwareTrait
         ]);
 
         $process->run(null, [
-            'NAME' => $name
+            'NAME' => $name,
         ]);
 
-        return !(boolean) $process->getOutput();
+        return !(bool) $process->getOutput();
     }
 
     /**
@@ -62,10 +61,10 @@ trait SoftwareTrait
         ]);
 
         $process->run(null, [
-            'NAME' => $name
+            'NAME' => $name,
         ]);
 
-        return !(boolean) $process->getOutput();
+        return !(bool) $process->getOutput();
     }
 
     /**
@@ -136,18 +135,18 @@ trait SoftwareTrait
 
         $process->setTimeout(null)
             ->run(null, [
-                'NAME' => $name,
+                'NAME'    => $name,
                 'Q_ARG_2' => $quiet_arg_2,
             ]);
 
         // Update repo.
         $process = new Process([
-            'sudo apt-get $Q_ARG_1 update $Q_ARG_2'
+            'sudo apt-get $Q_ARG_1 update $Q_ARG_2',
         ]);
 
         $process->setTimeout(null)
             ->run(null, [
-                'NAME' => $name,
+                'NAME'    => $name,
                 'Q_ARG_1' => $quiet_arg_1,
                 'Q_ARG_2' => $quiet_arg_2,
             ]);
@@ -170,7 +169,7 @@ trait SoftwareTrait
             }
 
             $process = new Process([
-                'sudo apt-get  $Q_ARG_1 remove "$PACKAGE" -y  $Q_ARG_2'
+                'sudo apt-get  $Q_ARG_1 remove "$PACKAGE" -y  $Q_ARG_2',
             ]);
 
             $process->setTimeout(null)
@@ -185,7 +184,7 @@ trait SoftwareTrait
     /**
      * Install python package.
      *
-     * @param  string $packages
+     * @param string $packages
      *
      * @return void
      */
@@ -197,12 +196,12 @@ trait SoftwareTrait
 
         foreach ($packages as $package) {
             $process = new Process([
-                'sudo pip install --upgrade "$PACKAGE"'
+                'sudo pip install --upgrade "$PACKAGE"',
             ]);
 
             $process->setTimeout(null)
                 ->run(null, [
-                    'PACKAGE' => $package
+                    'PACKAGE' => $package,
                 ]);
         }
     }
