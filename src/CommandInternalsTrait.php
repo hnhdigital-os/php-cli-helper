@@ -98,4 +98,16 @@ trait CommandInternalsTrait
 
         return $home_path;
     }
+
+    /**
+     * Get binary path.
+     *
+     * @return string
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     */
+    protected function getBinaryPath()
+    {
+        return realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
+    }
 }
