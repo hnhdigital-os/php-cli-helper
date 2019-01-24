@@ -27,22 +27,17 @@ trait FileSystemTrait
      * Remove directory.
      *
      * @param string $path
+     * @param array  $options
      *
      * @return void
      */
-    protected function removeDirectory($path)
+    protected function removeDirectory($path, $options = [])
     {
-        $files = glob($path.'/*');
-
-        foreach ($files as $file) {
-            is_dir($file) ? $this->removeDirectory($file) : unlink($file);
-        }
-
         if (!file_exists($path)) {
             return;
         }
 
-        rmdir($path);
+        $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'rm -rf "%s"', $path, $options);
     }
 
     /**
@@ -60,6 +55,19 @@ trait FileSystemTrait
         }
 
         $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'unlink "%s"', $path, $options);
+    }
+
+    /**
+     * Chmod on a path.
+     *
+     * @param string $path
+     * @param array  $options
+     *
+     * @return void
+     */
+    protected function chmod($path, $mod, $options = [])
+    {
+        $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'chmod -R %s "%s"', $mod, $path, $options);
     }
 
     /**
@@ -140,8 +148,9 @@ trait FileSystemTrait
 
         if (!$this->isMounted($dest_path, $options)) {
             $mount_options = array_has($options, 'options') ? '-'.array_get($options, 'options') : '';
+            $mount_type = array_has($options, 'type') ? array_get($options, 'type') : '--bind';
 
-            $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'mount --bind %s "%s" "%s"', $mount_options, $source_path, $dest_path, $options);
+            $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'mount %s %s "%s" "%s"', $mount_type, $mount_options, $source_path, $dest_path, $options);
         }
     }
 
