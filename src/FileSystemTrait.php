@@ -37,6 +37,12 @@ trait FileSystemTrait
             return;
         }
 
+        if (!empty($this->cwd) && !array_has($options, 'chroot') && stripos($path, $this->cwd) === false) {
+            $this->error('Attempted to remove path outside of working directory.');
+
+            return;
+        }
+
         $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'rm -rf "%s"', $path, $options);
     }
 
@@ -51,6 +57,12 @@ trait FileSystemTrait
     protected function removeFile($path, $options = [])
     {
         if (!file_exists($path)) {
+            return;
+        }
+
+        if (!empty($this->cwd) && !array_has($options, 'chroot') && stripos($path, $this->cwd) === false) {
+            $this->error('Attempted to remove path outside of working directory.');
+
             return;
         }
 
@@ -130,7 +142,9 @@ trait FileSystemTrait
      */
     protected function isMounted($path, $options = [])
     {
-        return !(boolean) $this->exec('mount | grep "%s" > /dev/null 2>&1; echo $?', $path, ['output' => 'last_line'] + $options);
+        return !(boolean) $this->exec('mount | grep "%s" > /dev/null 2>&1; echo $?', $path, [
+            'return' => 'last_line'
+        ] + $options);
     }
 
     /**
@@ -150,7 +164,17 @@ trait FileSystemTrait
             $mount_options = array_has($options, 'options') ? '-'.array_get($options, 'options') : '';
             $mount_type = array_has($options, 'type') ? array_get($options, 'type') : '--bind';
 
-            $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'mount %s %s "%s" "%s"', $mount_type, $mount_options, $source_path, $dest_path, $options);
+            $command = sprintf(
+                (array_get($options, 'sudo', false) ? 'sudo ' : '').'mount %s %s "%s" "%s"',
+                $mount_type,
+                $mount_options,
+                $source_path,
+                $dest_path
+            );
+
+            // Fix when source_path is set to none.
+            $command = str_replace('"none"', 'none', $command);
+            $this->exec($command, $options);
         }
     }
 
