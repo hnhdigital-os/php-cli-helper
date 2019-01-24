@@ -7,6 +7,23 @@ use Symfony\Component\Yaml\Yaml;
 trait FileSystemTrait
 {
     /**
+     * Create directory.
+     *
+     * @param string $path
+     * @param array  $options
+     *
+     * @return void
+     */
+    private function createDirectory($path, $options = [])
+    {
+        if (file_exists($path)) {
+            return;
+        }
+
+        $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'mkdir -p "%s"', $path, $options);
+    }
+
+    /**
      * Remove directory.
      *
      * @param string $path
@@ -18,10 +35,44 @@ trait FileSystemTrait
         $files = glob($path.'/*');
 
         foreach ($files as $file) {
-            is_dir($file) ? removeDirectory($file) : unlink($file);
+            is_dir($file) ? $this->removeDirectory($file) : unlink($file);
+        }
+
+        if (!file_exists($path)) {
+            return;
         }
 
         rmdir($path);
+    }
+
+    /**
+     * Remove a file.
+     *
+     * @param string $path
+     * @param array  $options
+     * 
+     * @return void
+     */
+    private function removeFile($path, $options = [])
+    {
+        if (!file_exists($path)) {
+            return;
+        }
+
+        $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'unlink "%s"', $path, $options);
+    }
+
+    /**
+     * Replace file contents.
+     *
+     * @return void
+     */
+    protected function replaceFileContents($path, $contents)
+    {
+        $tmp_path = '/tmp/'.hash('sha256', $path);
+        file_put_contents($tmp_path, $contents);
+
+        $output = $this->exec('sudo mv -f "%s" "%s"', $tmp_path, $path, ['no-verbose' => false]);
     }
 
     /**
@@ -42,9 +93,9 @@ trait FileSystemTrait
 
             return is_array($result) ? $result : [];
         } catch (ParseException $e) {
-            file_put_contents($user_config, '');
+            $this->error($e->getMessage());
 
-            return [];
+            exit();
         }
     }
 
@@ -59,5 +110,53 @@ trait FileSystemTrait
     protected function saveYamlFile($path, $data)
     {
         file_put_contents($path, Yaml::dump($data));
+    }
+
+    /**
+     * Check if path is mounted.
+     *
+     * @param string $path
+     * @param array  $options
+     *
+     * @return boolean
+     */
+    private function isMounted($path, $options = [])
+    {
+        return !(boolean) $this->exec('mount | grep "%s" > /dev/null 2>&1; echo $?', $path, ['output' => 'last_line'] + $options);
+    }
+
+    /**
+     * Mount a given path.
+     *
+     * @param string $source_path
+     * @param string $dest_path
+     * @param array  $options
+     *
+     * @return void
+     */
+    private function mount($source_path, $dest_path, $options = [])
+    {
+        $this->createDirectory($dest_path, ['sudo' => array_get($options, 'sudo', false)]);
+
+        if (!$this->isMounted($dest_path, $options)) {
+            $mount_options = array_has($options, 'options') ? '-'.array_get($options, 'options') : '';
+
+            $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'mount --bind %s "%s" "%s"', $mount_options, $source_path, $dest_path, $options);
+        }
+    }
+
+    /**
+     * Unmount a given path.
+     *
+     * @param string $path
+     * @param array  $options
+     *
+     * @return void
+     */
+    private function unmount($path, $options = [])
+    {
+        if ($this->isMounted($path)) {
+            $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').' umount -l "%s"', $path, $options);
+        }
     }
 }
