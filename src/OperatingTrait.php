@@ -105,23 +105,23 @@ trait OperatingTrait
 
         if ($this->hasVerbose('v')) {
             $this->line(sprintf('[<info>EXEC</info>] <comment>%s</comment>', $command));
-            $this->line(sprintf('[<info>EXEC</info>] Timeout: <comment>%s</comment>', array_get($options, 'timeout', 3600)));
-            $this->line(sprintf('[<info>EXEC</info>] Idle Timeout: <comment>%s</comment>', array_get($options, 'idle-timeout', 60)));
+            $this->line(sprintf('[<info>EXEC</info>] Timeout: <comment>%s</comment>', array_get($options, 'timeout', 3600) ?? 'None'));
+            $this->line(sprintf('[<info>EXEC</info>] Idle Timeout: <comment>%s</comment>', array_get($options, 'idle-timeout', 60) ?? 'None'));
             $this->line('');
         }
 
         $process = new Process($command);
-        $process->setTimeout(array_get($options, 'timeout', 3600) ?? 'None');
-        $process->setIdleTimeout(array_get($options, 'idle-timeout', 60) ?? 'None');
+        $process->setTimeout(array_get($options, 'timeout', 3600));
+        $process->setIdleTimeout(array_get($options, 'idle-timeout', 60));
 
         $process->start();
 
-        $output = '';
+        $output_text = '';
         
         try {
             foreach ($process as $type => $data) {
                 if ($type == 'out') {
-                    $output .= $data;
+                    $output_text .= $data;
                 }
 
                 if (!$this->hasVerbose('vv')) {
@@ -153,7 +153,15 @@ trait OperatingTrait
                 return $exit_code;
             }
 
-            $output = explode("\n", $output);
+            $output = [];
+
+            foreach (explode("\n", trim($output_text)) as $key => $line) {
+                if (stripos($line, 'mesg: ') !== false || empty($line)) {
+                    continue;
+                }
+
+                $output[] = $line;
+            }
 
             if (array_get($options, 'return') === 'all') {
                 return [$exit_code, $output];
@@ -161,6 +169,10 @@ trait OperatingTrait
 
             if (array_get($options, 'return') === 'output') {
                 return $output;
+            }
+
+            if (array_get($options, 'return') === 'last_line') {
+                return array_pop($output);
             }
 
             if (array_get($options, 'return') === 'output_string') {
