@@ -14,7 +14,7 @@ trait FileSystemTrait
      *
      * @return void
      */
-    private function createDirectory($path, $options = [])
+    protected function createDirectory($path, $options = [])
     {
         if (file_exists($path)) {
             return;
@@ -53,7 +53,7 @@ trait FileSystemTrait
      * 
      * @return void
      */
-    private function removeFile($path, $options = [])
+    protected function removeFile($path, $options = [])
     {
         if (!file_exists($path)) {
             return;
@@ -120,7 +120,7 @@ trait FileSystemTrait
      *
      * @return boolean
      */
-    private function isMounted($path, $options = [])
+    protected function isMounted($path, $options = [])
     {
         return !(boolean) $this->exec('mount | grep "%s" > /dev/null 2>&1; echo $?', $path, ['output' => 'last_line'] + $options);
     }
@@ -134,7 +134,7 @@ trait FileSystemTrait
      *
      * @return void
      */
-    private function mount($source_path, $dest_path, $options = [])
+    protected function mount($source_path, $dest_path, $options = [])
     {
         $this->createDirectory($dest_path, ['sudo' => array_get($options, 'sudo', false)]);
 
@@ -153,7 +153,7 @@ trait FileSystemTrait
      *
      * @return void
      */
-    private function unmount($path, $options = [])
+    protected function unmount($path, $options = [])
     {
         if ($this->isMounted($path)) {
             $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').' umount -l "%s"', $path, $options);
