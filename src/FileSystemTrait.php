@@ -20,7 +20,7 @@ trait FileSystemTrait
             return;
         }
 
-        $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'mkdir -p "%s"', $path, $options);
+        $this->exec('mkdir -p "%s"', $path, $options);
     }
 
     /**
@@ -43,7 +43,7 @@ trait FileSystemTrait
             return;
         }
 
-        $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'rm -rf "%s"', $path, $options);
+        $this->exec('rm -rf "%s"', $path, $options);
     }
 
     /**
@@ -66,11 +66,46 @@ trait FileSystemTrait
             return;
         }
 
-        $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'unlink "%s"', $path, $options);
+        $this->exec('unlink "%s"', $path, $options);
     }
 
     /**
-     * Chmod on a path.
+     * Copy a file from one location to another.
+     *
+     * @param string $source_path
+     * @param string $dest_path
+     * @param array  $options
+     *
+     * @return void
+     */
+    protected function copyFile($source_path, $dest_path, $options = [])
+    {
+        if (!empty($this->cwd) && !array_has($options, 'chroot') && stripos($dest_path, $this->cwd) === false) {
+            $this->error('Attempted to copy to a path outside of working directory.');
+
+            return;
+        }
+
+        $this->exec('cp -R "%s" "%s"', $source_path, $dest_path, $options);
+    }
+
+    /**
+     * Replace file contents.
+     *
+     * @return void
+     */
+    protected function putFileContents($path, $contents, $options = [])
+    {
+        $tmp_path = '/tmp/'.hash('sha256', $path);
+        file_put_contents($tmp_path, $contents);
+
+        $output = $this->exec('mv -f "%s" "%s"', $tmp_path, $path, [
+            'no-verbose' => false
+        ] + $options);
+    }
+
+    /**
+     * Chmod a path.
      *
      * @param string $path
      * @param array  $options
@@ -79,20 +114,20 @@ trait FileSystemTrait
      */
     protected function chmod($path, $mod, $options = [])
     {
-        $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').'chmod -R %s "%s"', $mod, $path, $options);
+        $this->exec('chmod %s "%s"', $mod, $path, $options);
     }
 
     /**
-     * Replace file contents.
+     * Chmod all files in path.
+     *
+     * @param string $path
+     * @param array  $options
      *
      * @return void
      */
-    protected function replaceFileContents($path, $contents)
+    protected function chmodAll($path, $mod, $options = [])
     {
-        $tmp_path = '/tmp/'.hash('sha256', $path);
-        file_put_contents($tmp_path, $contents);
-
-        $output = $this->exec('sudo mv -f "%s" "%s"', $tmp_path, $path, ['no-verbose' => false]);
+        $this->exec('chmod -R %s "%s"', $mod, $path, $options);
     }
 
     /**
@@ -165,7 +200,7 @@ trait FileSystemTrait
             $mount_type = array_has($options, 'type') ? array_get($options, 'type') : '--bind';
 
             $command = sprintf(
-                (array_get($options, 'sudo', false) ? 'sudo ' : '').'mount %s %s "%s" "%s"',
+                'mount %s %s "%s" "%s"',
                 $mount_type,
                 $mount_options,
                 $source_path,
@@ -188,8 +223,8 @@ trait FileSystemTrait
      */
     protected function unmount($path, $options = [])
     {
-        if ($this->isMounted($path)) {
-            $this->exec((array_get($options, 'sudo', false) ? 'sudo ' : '').' umount -l "%s"', $path, $options);
+        if ($this->isMounted($path, $options)) {
+            $this->exec('umount -l "%s"', $path, $options);
         }
     }
 }
