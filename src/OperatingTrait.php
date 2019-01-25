@@ -99,8 +99,18 @@ trait OperatingTrait
             $command = sprintf($command, ...$variables);
         }
 
+        // Convert to a chrooted command.
         if (array_has($options, 'chroot')) {
-            $command = sprintf('sudo chroot "%s" /bin/bash -c "su - -c \'%s\'" 2>&1', array_get($options, 'chroot'), addcslashes($command, '"'));
+            $command = sprintf(
+                'sudo chroot "%s" /bin/bash -c "su - -c \'%s\'" 2>&1',
+                array_get($options, 'chroot'),
+                addcslashes($command, '"')
+            );
+        }
+
+        // Add sudo if specified in option.
+        if (array_get($options, 'sudo', false) && substr($command, 0, 4) !== 'sudo') {
+            $command = sprintf('sudo %s', $command);
         }
 
         if ($this->hasVerbose('v')) {
