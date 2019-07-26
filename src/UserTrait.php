@@ -15,15 +15,15 @@ trait UserTrait
      */
     protected function userExists($name)
     {
-        $process = new Process([
+        $process = Process::fromShellCommandline(
             'id "$NAME" -u >/dev/null 2>&1; echo $?',
-        ]);
+        );
 
         $process->run(null, [
             'NAME' => $name,
         ]);
 
-        return !(bool) $process->getOutput();
+        return !(bool) trim($process->getOutput());
     }
 
     /**
@@ -40,9 +40,9 @@ trait UserTrait
             $password = '';
         }
 
-        $process = new Process([
+        $process = Process::fromShellCommandline(
             sprintf('set +o history && echo %s|%s | chpasswd && set -o history', $username, $password),
-        ]);
+        );
 
         $process->run();
     }

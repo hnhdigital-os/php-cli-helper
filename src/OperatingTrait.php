@@ -120,7 +120,7 @@ trait OperatingTrait
             $this->line('');
         }
 
-        $process = new Process($command);
+        $process = Process::fromShellCommandline($command);
         $process->setTimeout(array_get($options, 'timeout', 3600));
         $process->setIdleTimeout(array_get($options, 'idle-timeout', 60));
 

@@ -16,15 +16,15 @@ trait SoftwareTrait
      */
     protected function packageInstalled($name)
     {
-        $process = new Process([
+        $process = Process::fromShellCommandline(
             'sudo dpkg -s "$NAME" | grep Status >/dev/null 2>&1; echo $?',
-        ]);
+        );
 
         $process->run(null, [
             'NAME' => $name,
         ]);
 
-        return !(bool) $process->getOutput();
+        return !(bool) trim($process->getOutput());
     }
 
     /**
@@ -36,15 +36,15 @@ trait SoftwareTrait
      */
     protected function binaryExists($name)
     {
-        $process = new Process([
+        $process = Process::fromShellCommandline(
             'command -v "$NAME" >/dev/null 2>&1; echo $?',
-        ]);
+        );
 
         $process->run(null, [
             'NAME' => $name,
         ]);
 
-        return !(bool) $process->getOutput();
+        return !(bool) trim($process->getOutput());
     }
 
     /**
@@ -56,15 +56,15 @@ trait SoftwareTrait
      */
     protected function serviceExists($name)
     {
-        $process = new Process([
+        $process = Process::fromShellCommandline(
             'service --status-all | grep -Fq "$NAME" >/dev/null 2>&1; echo $?',
-        ]);
+        );
 
         $process->run(null, [
             'NAME' => $name,
         ]);
 
-        return !(bool) $process->getOutput();
+        return !(bool) trim($process->getOutput());
     }
 
     /**
@@ -104,9 +104,9 @@ trait SoftwareTrait
 
             $this->line(sprintf('Installing %s ✔️', $package));
 
-            $process = new Process([
+            $process = Process::fromShellCommandline(
                 'sudo apt-get $Q_ARG_1 install "$PACKAGE" -y $Q_ARG_2',
-            ]);
+            );
 
             $process->setTimeout(null)
                 ->run(null, [
@@ -129,9 +129,9 @@ trait SoftwareTrait
         list($quiet_arg_1, $quiet_arg_2) = $this->getVerboseArguments();
 
         // Add the repository.
-        $process = new Process([
+        $process = Process::fromShellCommandline(
             'sudo apt-add-repository "$NAME" -y $Q_ARG_2',
-        ]);
+        );
 
         $process->setTimeout(null)
             ->run(null, [
@@ -168,9 +168,9 @@ trait SoftwareTrait
                 continue;
             }
 
-            $process = new Process([
+            $process = Process::fromShellCommandline(
                 'sudo apt-get  $Q_ARG_1 remove "$PACKAGE" -y  $Q_ARG_2',
-            ]);
+            );
 
             $process->setTimeout(null)
                 ->run(null, [
@@ -195,9 +195,9 @@ trait SoftwareTrait
         }
 
         foreach ($packages as $package) {
-            $process = new Process([
+            $process = Process::fromShellCommandline(
                 'sudo pip install --upgrade "$PACKAGE"',
-            ]);
+            );
 
             $process->setTimeout(null)
                 ->run(null, [
